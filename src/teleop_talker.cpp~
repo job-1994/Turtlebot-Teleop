@@ -1,0 +1,78 @@
+#include "teleop/teleop_talker.h"
+
+teleop_talker::teleop_talker(ros::NodeHandle &n)
+	{
+		pub = n.advertise<geometry_msgs::Twist>("cmd_vel_mux/input/teleop", 1);
+	}
+teleop_talker::~teleop_talker(){}
+ 
+
+void teleop_talker::key(ros::NodeHandle &n)
+	{
+		std::cout  << 	"USE WASD TO CONTROL YOUR NEW FRIEND";
+		geometry_msgs::Twist cmd_stored;
+
+		float lin_speed = 0.2;
+		float ang_speed = 0.5;
+
+		while (ros::ok())
+			{		
+				cmd_stored.linear.x = cmd_stored.angular.x = cmd_stored.linear.z = cmd_stored.angular.y = cmd_stored.angular.z = cmd_stored.linear.y=0;
+	
+				initscr();
+				cbreak();
+				noecho();
+				int ch = getch();
+
+				switch(ch)
+					{
+						case 105: 
+							if(lin_speed<0.7)
+								{
+								  lin_speed = lin_speed + 0.1;
+								}
+						  break;
+						case 107: 
+							if(lin_speed>0)
+								{
+									lin_speed = lin_speed - 0.1;
+								}	
+ 							break;
+						case 111: 
+							if(ang_speed<1)
+								{
+									ang_speed = ang_speed + 0.1;
+								}
+						  break;
+						case 108: 
+							if(ang_speed>0.5)
+								{
+									ang_speed = ang_speed - 0.1;
+								}
+							break;				
+						
+						case 119: 
+							cmd_stored.linear.x = lin_speed;  
+							break;//move forward
+						case 97: 
+							cmd_stored.angular.z = ang_speed; 
+							break;//turn left
+						case 115: 
+							cmd_stored.linear.x = -lin_speed;
+							break;//move backwards
+						case 100: 
+							cmd_stored.angular.z = -ang_speed;  
+							break;//turn right	
+					}			
+			pub.publish(cmd_stored);
+		}
+	}
+
+
+int main(int argc, char **argv)
+	{
+		ros::init(argc, argv, "Master");
+		ros::NodeHandle n;
+		teleop_talker tt(n);
+		tt.key(n);
+	}
